@@ -1,0 +1,95 @@
+--1
+
+SELECT      F.*,
+            D.NM_DEPTO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+ORDER BY NM_FUNC ASC;
+
+--2
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            U.CD_FUNC,
+            U.NM_FUNC
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_FUNCIONARIO U
+ON          F.CD_GERENTE = U.CD_FUNC
+ORDER BY    F.NM_FUNC ASC;
+
+--3
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            U.CD_FUNC,
+            U.NM_FUNC,
+            D.CD_DEPTO,
+            D.NM_DEPTO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_FUNCIONARIO U
+ON          F.CD_GERENTE = U.CD_FUNC
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+ORDER BY    F.NM_FUNC ASC;
+
+--4
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            U.CD_FUNC,
+            U.NM_FUNC
+FROM        LOC_FUNCIONARIO F
+LEFT JOIN  LOC_FUNCIONARIO U
+ON          F.CD_GERENTE = U.CD_FUNC
+ORDER BY    F.NM_FUNC ASC;
+
+--5
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            U.CD_FUNC,
+            U.NM_FUNC
+FROM        LOC_FUNCIONARIO F
+RIGHT JOIN  LOC_FUNCIONARIO U
+ON          F.CD_GERENTE = U.CD_FUNC
+ORDER BY    F.NM_FUNC ASC;
+
+--6
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            D.CD_DEPTO,
+            D.NM_DEPTO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+WHERE       (F.VL_SALARIO * 12) / D.VL_ORCAMENTO > 0.01
+ORDER BY    F.NM_FUNC;
+
+--7
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            U.CD_FUNC,
+            U.NM_FUNC
+FROM        LOC_FUNCIONARIO F
+LEFT JOIN   LOC_FUNCIONARIO U
+ON          F.CD_GERENTE = U.CD_FUNC
+WHERE       U.CD_FUNC IS NULL
+ORDER BY    F.NM_FUNC ASC;
+
+--8
+
+SELECT      F.CD_FUNC,
+            F.NM_FUNC,
+            D.CD_DEPTO,
+            D.NM_DEPTO,
+            F.VL_SALARIO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+WHERE       (F.VL_SALARIO * 12) / D.VL_ORCAMENTO > 0.01
+AND         F.VL_SALARIO < 20000.00
+ORDER BY    F.NM_FUNC;
+
