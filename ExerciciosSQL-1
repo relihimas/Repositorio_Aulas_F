@@ -1,0 +1,51 @@
+--EXERCÍCIO CAPÍTULO 9
+--1
+
+SELECT  CD_FUNC     AS  CodFuncionario,
+        NM_FUNC     AS  NomeFuncionario,
+        VL_SALARIO  AS  ValorSalario
+FROM LOC_FUNCIONARIO;
+
+--2
+
+SELECT  * 
+FROM    LOC_PROPRIETARIO
+ORDER BY NOME_PROPRIETARIO DESC;
+
+--3
+
+SELECT  NM_FUNC     AS  NomeFuncionario,
+        CD_DEPTO    AS  CodigoDepartamento,
+        VL_SALARIO  AS  ValorSalario
+FROM    LOC_FUNCIONARIO
+WHERE   MOD(CD_FUNC, 2) = 0;
+
+--4
+
+SELECT  NM_FUNC     AS  NomeFuncionario,
+        VL_SALARIO  AS  ValorSalario
+FROM    LOC_FUNCIONARIO
+WHERE   UPPER(NM_FUNC) LIKE '%SI%'
+
+--5
+
+SELECT  NM_FUNC     AS  NomeFuncionario,
+        VL_SALARIO  AS  ValorSalario
+FROM    LOC_FUNCIONARIO
+WHERE   VL_SALARIO < 2000 OR VL_SALARIO > 5000;
+
+--6
+
+SELECT  NM_FUNC     AS  NomeFuncionario,
+        VL_SALARIO  AS  ValorSalario
+FROM    LOC_FUNCIONARIO
+WHERE   VL_SALARIO NOT IN (5145,74);
+
+--7
+
+SELECT  NM_FUNC, 
+        UPPER(SUBSTR(NM_FUNC,3,5)),
+        LOWER(SUBSTR(NM_FUNC,5,10))
+FROM    LOC_FUNCIONARIO;
+
+
