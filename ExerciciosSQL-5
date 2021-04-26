@@ -1,0 +1,61 @@
+--Capitulo 16
+--
+--SET SERVEROUTPUT ON
+--DECLARE
+--  v_empno    emp.empno%TYPE;
+--  v_ename    emp.ename%TYPE;
+--  v_job      emp.job%TYPE;
+--  v_mgr      emp.mgr%TYPE;
+--  v_hiredate emp.hiredate%TYPE;
+--  v_sal      emp.sal%TYPE;
+--  v_comm     emp.comm%TYPE;
+--  v_deptno   emp.deptno%TYPE;
+--BEGIN
+--SELECT empno, ename, job, mgr, hiredate, sal, comm, deptno
+--  INTO v_empno, v_ename, v_job, v_mgr, v_hiredate, v_sal, v_comm, v_deptno
+--  FROM emp
+-- WHERE empno = 7839;
+-- dbms_output.put_line('Codigo   = ' || v_empno);
+-- dbms_output.put_line('Nome     = ' || v_ename);
+-- dbms_output.put_line('Cargo    = ' || v_job);
+-- dbms_output.put_line('Gerente  = ' || v_mgr);
+-- dbms_output.put_line('Data     = ' || v_hiredate);
+-- dbms_output.put_line('Sala     = ' || v_sal);
+-- dbms_output.put_line('Comissao = ' || v_comm);
+-- dbms_output.put_line('Depart.  = ' || v_deptno);  
+--END;
+--/
+
+--BEGIN
+--   DELETE FROM emp
+--   WHERE deptno = 10;
+--   dbms_output.put_line('Linhas apagadas = ' || SQL%ROWCOUNT);
+--    IF SQL%FOUND = TRUE THEN
+--        dbms_output.put_line('Encontrado');
+--    ELSE
+--        dbms_output.put_line('Não encontrado');
+--   END IF;  
+--ROLLBACK;
+--END;
+--/
+
+SET SERVEROUTPUT ON
+DECLARE
+  emprec emp%rowtype;   
+  CURSOR cursor_emp IS 
+         SELECT deptno, SUM(sal)             
+          FROM emp        
+        GROUP BY deptno;
+BEGIN
+   OPEN cursor_emp;
+   LOOP
+      FETCH cursor_emp INTO emprec.deptno, emprec.sal;
+      EXIT WHEN cursor_emp%notfound;
+      dbms_output.put_line
+        ('Departamento: ' || emprec.deptno);
+      dbms_output.put_line
+        ('Salario     : ' || emprec.sal);
+   END LOOP;
+   CLOSE cursor_emp;
+END;
+/
