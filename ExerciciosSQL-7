@@ -1,0 +1,177 @@
+--RM86546
+--RACHID HASSAN RAFAEL ELIHIMAS
+--BANCO DE DADOS
+
+--1. Objetivo: Select Grupamento Simples
+--Listar o maior, o menor e a média salarial dos funcionários. Use Loc_Funcionario.
+
+SELECT  MAX(VL_SALARIO)             AS MAIOR_SALARIO,
+        MIN(VL_SALARIO)             AS MENOR_SALARIO,
+        ROUND(AVG(VL_SALARIO),2)    AS MEDIA_SALARIO
+FROM LOC_FUNCIONARIO;
+
+--OUTROS:
+SELECT *
+FROM LOC_FUNCIONARIO
+WHERE   VL_SALARIO = (SELECT MAX(VL_SALARIO) FROM LOC_FUNCIONARIO) OR
+        VL_SALARIO = (SELECT MIN(VL_SALARIO) FROM LOC_FUNCIONARIO);
+
+SELECT MAX(VL_SALARIO) FROM LOC_FUNCIONARIO;  
+SELECT MIN(VL_SALARIO) FROM LOC_FUNCIONARIO;
+SELECT AVG(VL_SALARIO) FROM LOC_FUNCIONARIO;
+
+--2. Objetivo: Select Grupamento com join
+--Listar os nomes dos departamentos e o maior salário pago pelo departamento.
+
+SELECT DISTINCT COUNT(CD_DEPTO) FROM LOC_DEPTO; --17 DEPARTAMENTOS NA DIMENSÃO DEPARTAMENTO
+SELECT CD_DEPTO, COUNT(CD_DEPTO) FROM LOC_DEPTO GROUP BY CD_DEPTO;
+SELECT CD_DEPTO, COUNT(CD_DEPTO) FROM LOC_FUNCIONARIO GROUP BY CD_DEPTO;
+
+--11, 12, 33, 42 E 50 SÃO OS DEPARTAMENTOS QUE APARECEM NA FATO FUNCIONÁRIO
+
+SELECT  D.CD_DEPTO                  AS CODIGO_DEPTO,
+        D.NM_DEPTO                  AS DEPARTAMENTO, 
+        MAX(F.VL_SALARIO)           AS MAIOR_SALARIO
+FROM    LOC_DEPTO D, LOC_FUNCIONARIO F
+WHERE   D.CD_DEPTO = F.CD_DEPTO
+GROUP BY D.CD_DEPTO, D.NM_DEPTO;
+
+
+--3. Objetivo: Select Grupamento com join
+--Listar os nomes dos departamentos e o maior salário pago pelo departamento, mas descarte funcionários com comissão de 3%.
+
+--QUANTIDADE DE DEPARTAMENTOS SEM FUNCIONARIOS COM COMISSAO IGUAL A 3
+SELECT CD_DEPTO, COUNT(CD_DEPTO) 
+FROM LOC_FUNCIONARIO 
+WHERE VL_PERC_COMISSAO <> 3
+GROUP BY CD_DEPTO;
+
+
+SELECT  D.CD_DEPTO                  AS CODIGO_DEPTO,
+        D.NM_DEPTO                  AS DEPARTAMENTO, 
+        MAX(F.VL_SALARIO)           AS MAIOR_SALARIO
+FROM LOC_DEPTO D, LOC_FUNCIONARIO F
+WHERE   D.CD_DEPTO = F.CD_DEPTO
+        AND F.VL_PERC_COMISSAO <> 3
+GROUP BY D.CD_DEPTO, D.NM_DEPTO;
+ 
+
+--4. Objetivo: Select Grupamento com self join
+--Agrupar funcionários por nomes de gerentes. Apresente quantos funcionários possui cada gerente.
+
+-- 1, 2, 3, 4, 6, 10 E NULL
+SELECT CD_GERENTE
+FROM LOC_FUNCIONARIO 
+GROUP BY CD_GERENTE;
+
+SELECT      F.CD_GERENTE        AS COD_GERENTE, 
+            G.NM_FUNC           AS NOME_GERENTE, 
+            COUNT(G.NM_FUNC)    AS QTDE_FUNC 
+FROM        LOC_FUNCIONARIO F               --TABELA DO NUMERO DE GERENTE
+INNER JOIN  LOC_FUNCIONARIO G               --TABELA FUNCIONÁRIOS E CLIENTES
+ON          G.CD_FUNC = F.CD_GERENTE 
+GROUP BY    F.CD_GERENTE, G.NM_FUNC;
+
+
+--5. Objetivo: Select Grupamento com self join e restrição de grupo
+--Agrupar funcionários por nomes de gerentes. Apresente quantos funcionários possui cada gerente, mas descarte gerente com menos de 4 subordinados.
+
+SELECT      F.CD_GERENTE        AS COD_GERENTE, 
+            G.NM_FUNC           AS NOME_GERENTE, 
+            COUNT(G.NM_FUNC)    AS QTDE_FUNC 
+FROM        LOC_FUNCIONARIO F               --TABELA DO NUMERO DE GERENTE
+INNER JOIN  LOC_FUNCIONARIO G               --TABELA FUNCIONÁRIOS E CLIENTES
+ON          G.CD_FUNC = F.CD_GERENTE
+GROUP BY    F.CD_GERENTE, G.NM_FUNC
+HAVING COUNT(G.NM_FUNC) >= 4; 
+
+--6. Objetivo: Resposta direta
+--Que departamentos têm médias salariais maiores que o salário da “Adriana Doretto”?
+
+--SALARIO ADRIANA
+SELECT NM_FUNC, VL_SALARIO FROM LOC_FUNCIONARIO WHERE NM_FUNC LIKE '%Adriana Doretto%';
+
+SELECT      F.CD_DEPTO                  AS COD_DEPTO,
+            D.NM_DEPTO                  AS NM_DEPTO,
+            ROUND(AVG(F.VL_SALARIO),2)  AS MEDIA_SALARIO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          D.CD_DEPTO = F.CD_DEPTO
+GROUP BY    F.CD_DEPTO, D.NM_DEPTO
+HAVING      ROUND(AVG(F.VL_SALARIO),2) > (SELECT    VL_SALARIO 
+                                            FROM    LOC_FUNCIONARIO 
+                                            WHERE NM_FUNC LIKE '%Adriana Doretto%'
+                                            );
+
+--RESPOSTA: OS DEPARTAMENTOS 50 (ADM GERAL), 11 (TI - DESENV), 12(TI - DADOS) E 13 (VENDAS)
+
+--7. Objetivo: Resposta direta
+--Que funcionários recebem salários maiores que a média salarial de todos os departamentos?
+
+
+SELECT      F.CD_FUNC               AS COD_FUNC,
+            F.NM_FUNC               AS NM_FUNC,
+            D.NM_DEPTO              AS NM_DEPTO,
+            F.VL_SALARIO            AS VL_SALARIO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+WHERE       VL_SALARIO >  ( SELECT   ROUND(AVG(VL_SALARIO),2)
+                            FROM LOC_FUNCIONARIO);
+
+--TAMBÉM PODEMOS USAR O ALL
+
+--RESPOSTA: OS FUNCIONÁRIOS YURI GAGARI, MARIA OLIVEIRA, SIMONE BATISTA, GUSTAVO LOPES, CRISTINA MURAKAMI, DAYSE SOARES, SALVINO LOPES, LARRISA ALMEIDA E DANIELLE DA SILVA 
+
+--8. Objetivo: Resposta direta
+--Que funcionários recebem salários maiores que a média salarial de algum departamento?
+
+--MÉDIA SALARIAL POR DEPARTAMENTO
+
+
+SELECT      F.CD_FUNC               AS COD_FUNC,
+            F.NM_FUNC               AS NM_FUNC,
+            D.NM_DEPTO              AS NM_DEPTO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+WHERE       F.VL_SALARIO > ANY (
+                                SELECT  ROUND(AVG(F.VL_SALARIO),2)           AS MEDIA_SALARIO
+                                FROM    LOC_DEPTO D, LOC_FUNCIONARIO F
+                                WHERE   D.CD_DEPTO = F.CD_DEPTO
+                                GROUP BY D.CD_DEPTO, D.NM_DEPTO
+                            );
+ 
+--RESPSOTA: YURI, SALVINO, GUSTAVO, MARIA, LARISSA, DAYSE, CRISTINA, DANIELLE, SIMONE, HELIO, ROGERIO, GERALDO, ANA, BETRIZ, DAIANA E JOZIVALDO 
+
+--9. Objetivo: Subquery simples
+--Apresente todos os dados do(s) departamento(s) que possuam 4 funcionários.
+
+--DEPARTAMENTO 42
+SELECT      CD_DEPTO
+FROM        LOC_FUNCIONARIO
+GROUP BY    CD_DEPTO
+HAVING      COUNT(CD_FUNC) = 4;
+ 
+SELECT *
+FROM LOC_DEPTO
+WHERE CD_DEPTO = (
+                    SELECT      CD_DEPTO
+                    FROM        LOC_FUNCIONARIO
+                    GROUP BY    CD_DEPTO
+                    HAVING      COUNT(CD_FUNC) = 4
+                    );
+ 
+--10. Objetivo: Subquery simples
+--Apresente todos os dados do(s) departamento(s) que possuam valor orçamentário maior que a média dos orçamentos da CARLOCA.
+
+-- média 6.679.411,76 
+SELECT      ROUND(AVG(VL_ORCAMENTO),2)
+FROM        LOC_DEPTO;
+
+SELECT  * 
+FROM    LOC_DEPTO
+WHERE   VL_ORCAMENTO > (
+                        SELECT      ROUND(AVG(VL_ORCAMENTO),2)
+                        FROM        LOC_DEPTO
+                    );
