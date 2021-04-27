@@ -108,6 +108,7 @@ HAVING      ROUND(AVG(F.VL_SALARIO),2) > (SELECT    VL_SALARIO
 --7. Objetivo: Resposta direta
 --Que funcionários recebem salários maiores que a média salarial de todos os departamentos?
 
+--Interpretação 1
 
 SELECT      F.CD_FUNC               AS COD_FUNC,
             F.NM_FUNC               AS NM_FUNC,
@@ -119,7 +120,23 @@ ON          F.CD_DEPTO = D.CD_DEPTO
 WHERE       VL_SALARIO >  ( SELECT   ROUND(AVG(VL_SALARIO),2)
                             FROM LOC_FUNCIONARIO);
 
---TAMBÉM PODEMOS USAR O ALL
+
+--Interpretação 2
+
+SELECT      F.CD_FUNC               AS COD_FUNC,
+            F.NM_FUNC               AS NM_FUNC,
+            D.NM_DEPTO              AS NM_DEPTO
+FROM        LOC_FUNCIONARIO F
+INNER JOIN  LOC_DEPTO D
+ON          F.CD_DEPTO = D.CD_DEPTO
+WHERE       F.VL_SALARIO > ALL (
+                                SELECT  ROUND(AVG(F.VL_SALARIO),2)           AS MEDIA_SALARIO
+                                FROM    LOC_DEPTO D, LOC_FUNCIONARIO F
+                                WHERE   D.CD_DEPTO = F.CD_DEPTO
+                                GROUP BY D.CD_DEPTO, D.NM_DEPTO
+                            );
+
+
 
 --RESPOSTA: OS FUNCIONÁRIOS YURI GAGARI, MARIA OLIVEIRA, SIMONE BATISTA, GUSTAVO LOPES, CRISTINA MURAKAMI, DAYSE SOARES, SALVINO LOPES, LARRISA ALMEIDA E DANIELLE DA SILVA 
 
