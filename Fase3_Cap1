@@ -139,9 +139,9 @@ ON F.CD_DEPTO = D.CD_DEPTO;
 
 SET SERVEROUTPUT ON
 DECLARE
-   nomefunc varchar(50);
-   nomechefe varchar(50);
-   nomedepto varchar(50);
+   nomefunc varchar(50); --loc_funcionario%ROWTYPE
+   nomechefe varchar(50); --loc_funcionario%ROWTYPE
+   nomedepto varchar(50); --loc_depto%ROWTYPE
    CURSOR c_func IS
     SELECT  F.NM_FUNC,
             U.NM_FUNC,
