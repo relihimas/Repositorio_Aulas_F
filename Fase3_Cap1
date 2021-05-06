@@ -139,9 +139,9 @@ ON F.CD_DEPTO = D.CD_DEPTO;
 
 SET SERVEROUTPUT ON
 DECLARE
-   nomefunc varchar(50); --loc_funcionario%ROWTYPE
-   nomechefe varchar(50); --loc_funcionario%ROWTYPE
-   nomedepto varchar(50); --loc_depto%ROWTYPE
+   nomefunc LOC_FUNCIONARIO.nm_func%TYPE;
+   nomechefe LOC_FUNCIONARIO.nm_func%TYPE;
+   nomedepto LOC_depto.nm_depto%TYPE;
    CURSOR c_func IS
     SELECT  F.NM_FUNC,
             U.NM_FUNC,
@@ -164,5 +164,7 @@ BEGIN
     END LOOP;
     CLOSE c_func;
 END;
+
+
 
 
