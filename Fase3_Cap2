@@ -52,15 +52,16 @@ END;
 
 SET SERVEROUTPUT ON
 DECLARE
-    v_sequencia := &valor1;
+    v_sequencia number := &valor1;
+    v_n number;
 BEGIN
     FOR i IN 1..v_sequencia LOOP                --1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181...
-        IF i = 1
-            n = (i) + (i)
-        ELSE i > 1
-            n = (i-1) + (i-2)
+        IF i = 1 THEN
+            v_n := 1;
+        ELSE
+            v_n := (i-1) + (i-2);
         END IF;
-        DBMS_OUTPUT.PUT_LINE('1' || ',' || ' ' ||n)
+        DBMS_OUTPUT.PUT_LINE(v_n);
     END LOOP;
 END;
 
@@ -77,5 +78,79 @@ END;
 --6) Objetivo: Script PL com cursor Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento onde 
 --trabalham usando o cursor c_func, mas apenas do gerente cujo código deve ser informado em variável auxiliar. 
 
+SET SERVEROUTPUT ON
+DECLARE
+   nomefunc LOC_FUNCIONARIO.nm_func%TYPE;
+   nomechefe LOC_FUNCIONARIO.nm_func%TYPE;
+   nomedepto LOC_depto.nm_depto%TYPE;
+   codgerente number := &valor1;
+   CURSOR c_func IS
+    SELECT  F.NM_FUNC,
+            U.NM_FUNC,
+            D.NM_DEPTO
+    INTO    nomefunc, nomechefe, nomedepto
+    FROM    LOC_FUNCIONARIO F
+    INNER JOIN LOC_FUNCIONARIO U
+    ON F.CD_GERENTE = U.CD_FUNC
+    LEFT JOIN   LOC_DEPTO D
+    ON F.CD_DEPTO = D.CD_DEPTO
+    WHERE U.CD_FUNC = codgerente;
+BEGIN
+    OPEN c_func;
+    LOOP
+    FETCH c_func INTO nomefunc, nomechefe, nomedepto;
+    EXIT WHEN c_func%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE ('Funcionário: ' || nomefunc);
+        DBMS_OUTPUT.PUT_LINE ('Chefe: ' || nomechefe);
+        DBMS_OUTPUT.PUT_LINE ('Departamento: ' || nomedepto);
+        DBMS_OUTPUT.PUT_LINE ('############################');
+    END LOOP;
+    CLOSE c_func;
+END;
+
+
+
 --7) Objetivo: Script PL com cursor Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento 
 --onde trabalham usando o cursor c_func, mas apenas do departamento cujo código deve ser informado em variável auxiliar.
+SELECT  F.NM_FUNC,
+            U.NM_FUNC,
+            D.NM_DEPTO
+    FROM    LOC_FUNCIONARIO F
+    INNER JOIN LOC_FUNCIONARIO U
+    ON F.CD_GERENTE = U.CD_FUNC
+    LEFT JOIN   LOC_DEPTO D
+    ON F.CD_DEPTO = D.CD_DEPTO
+    WHERE F.CD_DEPTO = 11;
+
+
+SET SERVEROUTPUT ON
+DECLARE
+   nomefunc LOC_FUNCIONARIO.nm_func%TYPE;
+   nomechefe LOC_FUNCIONARIO.nm_func%TYPE;
+   nomedepto LOC_depto.nm_depto%TYPE;
+   coddepto number := &valor1;
+   CURSOR c_func IS
+    SELECT  F.NM_FUNC,
+            U.NM_FUNC,
+            D.NM_DEPTO
+    INTO    nomefunc, nomechefe, nomedepto
+    FROM    LOC_FUNCIONARIO F
+    INNER JOIN LOC_FUNCIONARIO U
+    ON F.CD_GERENTE = U.CD_FUNC
+    LEFT JOIN   LOC_DEPTO D
+    ON F.CD_DEPTO = D.CD_DEPTO
+    WHERE D.CD_DEPTO = coddepto;
+BEGIN
+    OPEN c_func;
+    LOOP
+    FETCH c_func INTO nomefunc, nomechefe, nomedepto;
+    EXIT WHEN c_func%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE ('Funcionário: ' || nomefunc);
+        DBMS_OUTPUT.PUT_LINE ('Chefe: ' || nomechefe);
+        DBMS_OUTPUT.PUT_LINE ('Departamento: ' || nomedepto);
+        DBMS_OUTPUT.PUT_LINE ('############################');
+    END LOOP;
+    CLOSE c_func;
+END;
+
+
