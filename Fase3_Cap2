@@ -1,0 +1,81 @@
+--EXERCICIOS CAPITULO 2 DA FASE 3
+
+--1) Objetivo: View Crie uma view chamada v_ranking_cliente que retorne o nome do cliente, seu número de estrelas, a quantidade total de locações realizadas, 
+--a data mais recente de locação, a data mais antiga de locação e os valores totais de locação para todos os clientes cadastrados. 
+--Exiba somente os 3 maiores clientes em termos de valores de locação. 
+
+CREATE VIEW v_ranking_cliente AS
+    SELECT  C.NM_CLIENTE,               --nome do cliente
+            C.NR_ESTRELAS,              --seu número de estrelas
+            COUNT(P.NR_PEDIDO),         --a quantidade total de locações realizadas
+            MAX(P.DT_RETIRADA),         --a data mais recente de locação
+            MIN(P.DT_RETIRADA),         --a data mais antiga de locação
+            SUM(P.VL_TOTAL)           -- valores totais de locação
+            FROM LOC_CLIENTE C
+            INNER JOIN LOC_PEDIDO_LOCACAO P
+            ON C.CD_CLIENTE = P.CD_CLIENTE
+            GROUP BY C.NM_CLIENTE, C.NR_ESTRELAS 
+            ORDER BY SUM(P.VL_TOTAL) DESC
+            FETCH NEXT 3 ROWS ONLY;
+
+SELECT * FROM v_ranking_cliente;
+
+-- 2) Objetivo: Script PL com tomada de decisão complexa Num certo país, o peso das cartas custa em centavos o seu valor em gramas, 
+--mas pesos menores que 8 gramas custam 8 centavos. Nesse país, existem apenas selos de 5 e de 3 centavos. 
+--Elabore programa que recebendo o peso informe o número de selos de 3 centavos e de 5 centavos necessários, porém sempre deverá ser 
+--informado o menor número de selos de 5 centavos possível. 
+
+SET SERVEROUTPUT ON
+DECLARE
+    v_peso number := &valor1;
+    v_qte3 number;
+    v_qte5 number;
+BEGIN
+    IF v_peso < 8 THEN
+        DBMS_OUTPUT.PUT_LINE('O valor da carta é de 8 centavos');
+    ELSE
+        v_qte3 := v_peso/3;
+        v_qte5 := v_peso/5;
+        LOOP
+            
+                
+        
+        
+        
+        DBMS_OUTPUT.PUT_LINE('Peso da Carta: ' ||v_peso);
+        DBMS_OUTPUT.PUT_LINE('Qtde de selos de 3 centavos: ' || (v_peso/3) );
+        DBMS_OUTPUT.PUT_LINE('Qtde de selos de 5 centavos: ' || (v_peso/5) );
+    END IF;
+END;
+
+--3) Objetivo: Script PL com loop Elabore algoritmo que apresente os “n” primeiros termos de Fibonacci (0 1 1 2 3 5 8 12 21 34...). 
+
+SET SERVEROUTPUT ON
+DECLARE
+    v_sequencia := &valor1;
+BEGIN
+    FOR i IN 1..v_sequencia LOOP                --1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181...
+        IF i = 1
+            n = (i) + (i)
+        ELSE i > 1
+            n = (i-1) + (i-2)
+        END IF;
+        DBMS_OUTPUT.PUT_LINE('1' || ',' || ' ' ||n)
+    END LOOP;
+END;
+
+--4) Objetivo: Script PL acessando dados Desenvolva um script que exiba o código de um grupo e sua descrição na forma de uma linha. 
+--Caso o grupo não exista, exiba mensagem esclarecendo que o grupo inexiste. 
+
+
+
+--5) Objetivo: Script PL acessando dados Desenvolva um script que receba o número da placa do veículo e retorne, além da placa, 
+--o nome do proprietário, o modelo do veículo e sua cor. Caso número da placa não esteja cadastrado na tabela, retornar a mensagem: 
+--“Veículo não cadastrado!”. Caso ocorra algum outro erro, apresente a mensagem correspondente ao erro ocorrido. 
+
+
+--6) Objetivo: Script PL com cursor Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento onde 
+--trabalham usando o cursor c_func, mas apenas do gerente cujo código deve ser informado em variável auxiliar. 
+
+--7) Objetivo: Script PL com cursor Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento 
+--onde trabalham usando o cursor c_func, mas apenas do departamento cujo código deve ser informado em variável auxiliar.
