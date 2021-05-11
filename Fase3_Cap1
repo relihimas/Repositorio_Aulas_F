@@ -47,6 +47,23 @@ BEGIN
     END;
 END;
 
+--################COM INSERÇÃO DO USUÁRIO######################
+
+SET SERVEROUTPUT ON
+DECLARE 
+    v_var decimal(10,2) := &valor;
+    v_media decimal(10,2);
+BEGIN
+    FOR i IN 1..3 LOOP 
+    INSERT INTO tabela_media VALUES(v_var);
+    DBMS_OUTPUT.PUT_LINE ('Valor = ' || v_var);
+    END LOOP;
+    BEGIN
+    
+    DBMS_OUTPUT.PUT_LINE ('Valor da Média= ' || v_media);
+    END;
+END;
+
 --3) Objetivo: Script PL com tomada de decisão simples
 --Dados três números necessariamente distintos entre si, identifique o maior e o menor deles.
 
