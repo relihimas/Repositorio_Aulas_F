@@ -42,8 +42,8 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE ('Valor = ' || v_var);
     END LOOP;
     BEGIN
-    SELECT AVG(valor) INTO v_media FROM tabela_media;
-    DBMS_OUTPUT.PUT_LINE ('Valor da Média= ' || v_media || ' e data:' ||  SYSDATE);
+    SELECT AVG(valor) + TO_CHAR(SYSDATE, 'DD') INTO v_media FROM tabela_media;
+    DBMS_OUTPUT.PUT_LINE ('Valor da Média= ' || v_media);
     END;
 END;
 
