@@ -27,10 +27,13 @@ SELECT * FROM v_ranking_cliente;
 
 SET SERVEROUTPUT ON
 DECLARE
+   
     v_peso number := &valor1;
     v_qte3 number;
     v_qte5 number;
 BEGIN
+    
+    
     IF v_peso < 8 THEN
         DBMS_OUTPUT.PUT_LINE('O valor da carta é de 8 centavos');
     ELSE
@@ -52,15 +55,21 @@ END;
 
 SET SERVEROUTPUT ON
 DECLARE
-    v_sequencia number := &valor1;
+    v_zero number := 0;
+    v_um number := 1;
+    v_sequencia number := 10;--&valor1;
     v_n number;
+    i number;
 BEGIN
-    FOR i IN 1..v_sequencia LOOP                --1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181...
-        IF i = 1 THEN
-            v_n := 1;
-        ELSE
-            v_n := (i-1) + (i-2);
-        END IF;
+    DBMS_OUTPUT.PUT_LINE('Série de Fibonacci');
+    DBMS_OUTPUT.PUT_LINE(v_zero);
+    DBMS_OUTPUT.PUT_LINE(v_um);
+    FOR i IN 2..v_sequencia LOOP                --1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181...
+        v_n := v_zero + v_um; 
+    
+    v_zero := v_um;
+    v_um := v_n; 
+    
         DBMS_OUTPUT.PUT_LINE(v_n);
     END LOOP;
 END;
