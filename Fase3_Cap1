@@ -1,164 +1,150 @@
---Fase3_Cap1_RM86546
---1) Objetivo: View
---Crie uma view chamada v_receita_diaria_proprietario que exiba a receita diária por proprietário. 
---O cálculo da receita deve ser o valor total do veículo locado na data de sua retirada.
+--EXERCICIOS CAPITULO 2 DA FASE 3
 
---LOC_PEDIDO_LOCACAO
---LOC_PROPRIETARIO --infos do proprietario
---LOC_ITEM_LOCACAO --tem o numero do pedido e o valor total
---LOC_VEICULO --tem a informação do veículo e do proprietário
+--1) Objetivo: View Crie uma view chamada v_ranking_cliente que retorne o nome do cliente, seu número de estrelas, a quantidade total de locações realizadas, 
+--a data mais recente de locação, a data mais antiga de locação e os valores totais de locação para todos os clientes cadastrados. 
+--Exiba somente os 3 maiores clientes em termos de valores de locação. 
 
--- Não nào, é quanto deu de diária. Exemplo: Ele retirou o carro na segunda, dia 3/05 e devolveu dia 5 de maio. 
- --Foram duas diárias de por exemplo 100,00. Então para esta retirada de 03/05 a receita vai ser 200,00
+CREATE VIEW v_ranking_cliente AS
+    SELECT  C.NM_CLIENTE,               --nome do cliente
+            C.NR_ESTRELAS,              --seu número de estrelas
+            COUNT(P.NR_PEDIDO),         --a quantidade total de locações realizadas
+            MAX(P.DT_RETIRADA),         --a data mais recente de locação
+            MIN(P.DT_RETIRADA),         --a data mais antiga de locação
+            SUM(P.VL_TOTAL)           -- valores totais de locação
+            FROM LOC_CLIENTE C
+            INNER JOIN LOC_PEDIDO_LOCACAO P
+            ON C.CD_CLIENTE = P.CD_CLIENTE
+            GROUP BY C.NM_CLIENTE, C.NR_ESTRELAS 
+            ORDER BY SUM(P.VL_TOTAL) DESC
+            FETCH NEXT 3 ROWS ONLY;
 
-CREATE VIEW v_receita_diaria_proprietario AS
-SELECT      P.CD_PROPRIETARIO                           AS   CodigoProprietario,
-            P.NOME_PROPRIETARIO                         AS   NomeProprietario,
-            V.NR_PLACA                                  AS   Placa,
-            I.DT_RETIRADA                               AS   DataRetirada,
-            ROUND(SUM(I.VL_TOTAL),2)                    AS   ReceitaLocacao
-FROM        LOC_ITEM_LOCACAO I
-LEFT JOIN   LOC_VEICULO V
-ON          I.NR_PLACA = V.NR_PLACA
-LEFT JOIN   LOC_PROPRIETARIO P
-ON          V.CD_PROPRIETARIO = P.CD_PROPRIETARIO
-GROUP BY    P.CD_PROPRIETARIO, P.NOME_PROPRIETARIO, V.NR_PLACA, I.DT_RETIRADA
-ORDER BY    I.DT_RETIRADA ASC;
+SELECT * FROM v_ranking_cliente;
 
-SELECT * FROM v_receita_diaria_proprietario;
-
---2) Objetivo: Script PL com variáveis e data
---Elabore programa que receba três valores e devolva a média destes, acrescida do dia em que o script foi rodado.
-CREATE TABLE tabela_media(valor decimal(10,2) not null);
-TRUNCATE TABLE tabela_media;
-
-SET SERVEROUTPUT ON
-DECLARE 
-    v_var decimal(10,2) := 2;
-    v_media decimal(10,2);
-BEGIN
-    FOR i IN 1..3 LOOP 
-    INSERT INTO tabela_media VALUES(v_var);
-    DBMS_OUTPUT.PUT_LINE ('Valor = ' || v_var);
-    END LOOP;
-    BEGIN
-    SELECT AVG(valor) + TO_CHAR(SYSDATE, 'DD') INTO v_media FROM tabela_media;
-    DBMS_OUTPUT.PUT_LINE ('Valor da Média= ' || v_media);
-    END;
-END;
-
---################COM INSERÇÃO DO USUÁRIO######################
-
-SET SERVEROUTPUT ON
-DECLARE 
-    v_var decimal(10,2) := &valor;
-    v_media decimal(10,2);
-BEGIN
-    FOR i IN 1..3 LOOP 
-    INSERT INTO tabela_media VALUES(v_var);
-    DBMS_OUTPUT.PUT_LINE ('Valor = ' || v_var);
-    END LOOP;
-    BEGIN
-    
-    DBMS_OUTPUT.PUT_LINE ('Valor da Média= ' || v_media);
-    END;
-END;
-
---3) Objetivo: Script PL com tomada de decisão simples
---Dados três números necessariamente distintos entre si, identifique o maior e o menor deles.
-
-SET SERVEROUTPUT ON
-DECLARE 
-    v_var1 decimal(10,2) := 10; --&valor1
-    v_var2 decimal(10,2) := 20; --&valor2
-    v_var3 decimal(10,2) := 30; --&valor3
-BEGIN
-    IF v_var1 > v_var2 AND v_var1 > v_var3 THEN
-        DBMS_OUTPUT.PUT_LINE ('O maior valor é ' || v_var1);
-    ELSIF v_var2 > v_var1 AND v_var2 > v_var3 THEN
-        DBMS_OUTPUT.PUT_LINE ('O maior valor é ' || v_var2);
-    ELSIF v_var3 > v_var1 AND v_var3 > v_var2 THEN
-        DBMS_OUTPUT.PUT_LINE ('O maior valor é ' || v_var3);
-    END IF;
-    IF v_var1 < v_var2 AND v_var1 < v_var3 THEN
-        DBMS_OUTPUT.PUT_LINE ('O menor valor é ' || v_var1);
-    ELSIF v_var2 < v_var1 AND v_var2 < v_var3 THEN
-        DBMS_OUTPUT.PUT_LINE ('O menor valor é ' || v_var2);
-    ELSIF v_var3 < v_var1 AND v_var3 < v_var2 THEN
-        DBMS_OUTPUT.PUT_LINE ('O menor valor é ' || v_var3);
-    END IF;
-END;
-
---OUTRA SOLUÇÃO
-CREATE TABLE tabela_ident(valor decimal(10,2) not null);
-TRUNCATE TABLE tabela_media;
-
-SET SERVEROUTPUT ON
-DECLARE 
-    v_var1 decimal(10,2) := 10;
-    v_var2 decimal(10,2) := 20;
-    v_var3 decimal(10,2) := 30;
-    v_contador NUMBER(2) :=1;
-    v_max decimal(10,2);
-    v_min decimal(10,2);
-BEGIN
-    LOOP
-    INSERT INTO tabela_ident VALUES(v_var1);
-    INSERT INTO tabela_ident VALUES(v_var2);
-    INSERT INTO tabela_ident VALUES(v_var3);
-    v_contador := v_contador + 1;
-    EXIT WHEN v_contador = 3;
-    END LOOP;
-    BEGIN
-    SELECT MAX(valor) INTO v_max FROM tabela_ident;
-    SELECT MIN(valor) INTO v_min FROM tabela_ident;
-    DBMS_OUTPUT.PUT_LINE ('Maior valor = ' || v_max);
-    DBMS_OUTPUT.PUT_LINE ('Menor valor = ' ||  v_min);
-    END;
-END;
-
---4) Objetivo: Script PL acessando dados
---Desenvolva um script que vai receber como parâmetro o código do departamento e retornar o nome do departamento e o seu código
---Caso o código do departamento não esteja cadastrado na tabela, retornar a mensagem  “DEPARTAMENTO NÃO CADASTRADO !!”
+-- 2) Objetivo: Script PL com tomada de decisão complexa Num certo país, o peso das cartas custa em centavos o seu valor em gramas, 
+--mas pesos menores que 8 gramas custam 8 centavos. Nesse país, existem apenas selos de 5 e de 3 centavos. 
+--Elabore programa que recebendo o peso informe o número de selos de 3 centavos e de 5 centavos necessários, porém sempre deverá ser 
+--informado o menor número de selos de 5 centavos possível. 
 
 SET SERVEROUTPUT ON
 DECLARE
-   v_coddepto number := &valor1;
-   codigodepto number; 
-   nomedepto varchar(30);
-   CURSOR cursor_depto IS
-   SELECT CD_DEPTO, NM_DEPTO INTO codigodepto, nomedepto FROM LOC_DEPTO
-   WHERE CD_DEPTO = v_coddepto;
+   
+    v_peso number := &valor1;
+    v_qte3 number;
+    v_qte5 number;
 BEGIN
-    OPEN cursor_depto;
-    FETCH cursor_depto INTO codigodepto, nomedepto;
-    IF cursor_depto%FOUND = TRUE THEN
-        DBMS_OUTPUT.PUT_LINE ('O código do departamento é: ' || codigodepto || ' e o seu nome é: ' || nomedepto);
+    
+    
+    IF v_peso < 8 THEN
+        DBMS_OUTPUT.PUT_LINE('O valor da carta é de 8 centavos');
     ELSE
-        DBMS_OUTPUT.PUT_LINE ('DEPARTAMENTO NÃO CADASTRADO !!');
+        v_qte3 := v_peso/3;
+        v_qte5 := v_peso/5;
+        LOOP
+            
+                
+        
+        
+        
+        DBMS_OUTPUT.PUT_LINE('Peso da Carta: ' ||v_peso);
+        DBMS_OUTPUT.PUT_LINE('Qtde de selos de 3 centavos: ' || (v_peso/3) );
+        DBMS_OUTPUT.PUT_LINE('Qtde de selos de 5 centavos: ' || (v_peso/5) );
     END IF;
-    CLOSE cursor_depto;
+END;
+
+--3) Objetivo: Script PL com loop Elabore algoritmo que apresente os “n” primeiros termos de Fibonacci (0 1 1 2 3 5 8 12 21 34...). 
+
+SET SERVEROUTPUT ON
+DECLARE
+    v_zero number := 0;
+    v_um number := 1;
+    v_sequencia number := 10;--&valor1;
+    v_n number;
+    i number;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Série de Fibonacci');
+    DBMS_OUTPUT.PUT_LINE(v_zero);
+    DBMS_OUTPUT.PUT_LINE(v_um);
+    FOR i IN 2..v_sequencia LOOP                --1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181...
+        v_n := v_zero + v_um; 
+    
+    v_zero := v_um;
+    v_um := v_n; 
+    
+        DBMS_OUTPUT.PUT_LINE(v_n);
+    END LOOP;
+END;
+
+--4) Objetivo: Script PL acessando dados Desenvolva um script que exiba o código de um grupo e sua descrição na forma de uma linha. 
+--Caso o grupo não exista, exiba mensagem esclarecendo que o grupo inexiste. 
+
+SET SERVEROUTPUT ON
+DECLARE
+    v_grupo number := &valor;
+    v_cd_grupo LOC_GRUPO.CD_GRUPO%TYPE;
+    v_ds_grupo LOC_GRUPO.DS_GRUPO%TYPE;
+    CURSOR c_grupo IS
+    SELECT CD_GRUPO, DS_GRUPO
+    INTO v_cd_grupo, v_ds_grupo
+    FROM LOC_GRUPO
+    WHERE CD_GRUPO = v_grupo;
+BEGIN
+    OPEN c_grupo;
+    FETCH c_grupo INTO v_cd_grupo, v_ds_grupo;
+    IF c_grupo%FOUND = TRUE THEN
+        DBMS_OUTPUT.PUT_LINE ('O código do grupo é: ' || v_cd_grupo|| ' e o seu nome é: ' || v_ds_grupo);
+    ELSE
+        DBMS_OUTPUT.PUT_LINE ('Grupo inexistente!');
+    END IF;
+    CLOSE c_grupo;
 END;
 
 
---5) Objetivo: Script PL com cursor
---Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento onde trabalham usando o cursor c_func.
+--5) Objetivo: Script PL acessando dados Desenvolva um script que receba o número da placa do veículo e retorne, além da placa, 
+--o nome do proprietário, o modelo do veículo e sua cor. Caso número da placa não esteja cadastrado na tabela, retornar a mensagem: 
+--“Veículo não cadastrado!”. Caso ocorra algum outro erro, apresente a mensagem correspondente ao erro ocorrido. 
 
-SELECT  F.NM_FUNC,
-        U.NM_FUNC,
-        D.NM_DEPTO
-FROM    LOC_FUNCIONARIO F
-INNER JOIN LOC_FUNCIONARIO U
-ON F.CD_GERENTE = U.CD_FUNC
-LEFT JOIN   LOC_DEPTO D
-ON F.CD_DEPTO = D.CD_DEPTO;
+SELECT V.NR_PLACA, P.NOME_PROPRIETARIO, V.MODELO, V.COR 
+FROM LOC_VEICULO V
+INNER JOIN LOC_PROPRIETARIO P
+ON V.CD_PROPRIETARIO = P.CD_PROPRIETARIO;
 
+SET SERVEROUTPUT ON
+DECLARE
+    v_placa varchar(10) := 'CZR9988';
+    v_num_placa LOC_VEICULO.nr_placa%type;
+    v_nm_proprietario LOC_PROPRIETARIO.nome_proprietario%type;
+    v_modelo LOC_VEICULO.modelo%type;
+    v_cor LOC_VEICULO.cor%type;
+    CURSOR c_veiculo IS
+    SELECT V.NR_PLACA, P.NOME_PROPRIETARIO, V.MODELO, V.COR
+    INTO v_num_placa, v_nm_proprietario, v_modelo, v_cor
+    FROM LOC_VEICULO V
+    INNER JOIN LOC_PROPRIETARIO P
+    ON V.CD_PROPRIETARIO = P.CD_PROPRIETARIO
+    WHERE V.NR_PLACA = v_placa;
+BEGIN
+    OPEN c_veiculo;
+    FETCH c_veiculo INTO v_num_placa, v_nm_proprietario, v_modelo, v_cor;
+        IF c_veiculo%FOUND = TRUE THEN
+        DBMS_OUTPUT.PUT_LINE ('Placa: ' || v_num_placa);
+        DBMS_OUTPUT.PUT_LINE ('Proprietario: ' || v_nm_proprietario);
+        DBMS_OUTPUT.PUT_LINE ('Modelo: ' || v_modelo);
+        DBMS_OUTPUT.PUT_LINE ('Cor: ' || v_cor);
+    ELSE
+        DBMS_OUTPUT.PUT_LINE ('Veículo não cadastrado!');
+    END IF;
+    CLOSE c_veiculo;
+END;
+
+--6) Objetivo: Script PL com cursor Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento onde 
+--trabalham usando o cursor c_func, mas apenas do gerente cujo código deve ser informado em variável auxiliar. 
 
 SET SERVEROUTPUT ON
 DECLARE
    nomefunc LOC_FUNCIONARIO.nm_func%TYPE;
    nomechefe LOC_FUNCIONARIO.nm_func%TYPE;
    nomedepto LOC_depto.nm_depto%TYPE;
+   codgerente number := &valor1;
    CURSOR c_func IS
     SELECT  F.NM_FUNC,
             U.NM_FUNC,
@@ -168,7 +154,8 @@ DECLARE
     INNER JOIN LOC_FUNCIONARIO U
     ON F.CD_GERENTE = U.CD_FUNC
     LEFT JOIN   LOC_DEPTO D
-    ON F.CD_DEPTO = D.CD_DEPTO;
+    ON F.CD_DEPTO = D.CD_DEPTO
+    WHERE U.CD_FUNC = codgerente;
 BEGIN
     OPEN c_func;
     LOOP
@@ -183,5 +170,48 @@ BEGIN
 END;
 
 
+
+--7) Objetivo: Script PL com cursor Desenvolva um script que liste os nomes de funcionários, de seus chefes e o nome do departamento 
+--onde trabalham usando o cursor c_func, mas apenas do departamento cujo código deve ser informado em variável auxiliar.
+SELECT  F.NM_FUNC,
+            U.NM_FUNC,
+            D.NM_DEPTO
+    FROM    LOC_FUNCIONARIO F
+    INNER JOIN LOC_FUNCIONARIO U
+    ON F.CD_GERENTE = U.CD_FUNC
+    LEFT JOIN   LOC_DEPTO D
+    ON F.CD_DEPTO = D.CD_DEPTO
+    WHERE F.CD_DEPTO = 11;
+
+
+SET SERVEROUTPUT ON
+DECLARE
+   nomefunc LOC_FUNCIONARIO.nm_func%TYPE;
+   nomechefe LOC_FUNCIONARIO.nm_func%TYPE;
+   nomedepto LOC_depto.nm_depto%TYPE;
+   coddepto number := &valor1;
+   CURSOR c_func IS
+    SELECT  F.NM_FUNC,
+            U.NM_FUNC,
+            D.NM_DEPTO
+    INTO    nomefunc, nomechefe, nomedepto
+    FROM    LOC_FUNCIONARIO F
+    INNER JOIN LOC_FUNCIONARIO U
+    ON F.CD_GERENTE = U.CD_FUNC
+    LEFT JOIN   LOC_DEPTO D
+    ON F.CD_DEPTO = D.CD_DEPTO
+    WHERE D.CD_DEPTO = coddepto;
+BEGIN
+    OPEN c_func;
+    LOOP
+    FETCH c_func INTO nomefunc, nomechefe, nomedepto;
+    EXIT WHEN c_func%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE ('Funcionário: ' || nomefunc);
+        DBMS_OUTPUT.PUT_LINE ('Chefe: ' || nomechefe);
+        DBMS_OUTPUT.PUT_LINE ('Departamento: ' || nomedepto);
+        DBMS_OUTPUT.PUT_LINE ('############################');
+    END LOOP;
+    CLOSE c_func;
+END;
 
 
