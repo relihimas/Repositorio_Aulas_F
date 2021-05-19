@@ -10,8 +10,10 @@
 --1. criei uma procedure que faz o input do novo pedido
 --2. criei uma trigger que abrirá uma view com todas as ordens em aberto
 
-
 SET SERVEROUTPUT ON
+CREATE VIEW vw_pedidosabertos AS 
+SELECT * FROM t_pedidos_compra WHERE status = 'Aberto';
+
 
 CREATE OR REPLACE PROCEDURE prcd_novopedido
 (   p_idpedido                  IN  t_pedidos_compra.status%TYPE,
@@ -29,10 +31,15 @@ EXCEPTION
 END prcd_novopedido;
 
 
+SET SERVEROUTPUT ON
+CREATE OR REPLACE TRIGGER trg_avisonovopedido
+AFTER UPDATE ON t_pedidos_compra
+FOR EACH ROW
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Existem novas compras a serem recebidas! Cheque o relatório!');
+END trg_avisonovopedido;
 
-AFTER INSERT 
-
-
+SELECT * FROM vw_pedidosabertos;
 
 --3.	Cancelamento de Pedido de Compra:
 --a.	Caso o setor de Suprimentos decida cancelar algum Pedido de Compra, ativa uma trigger onde altera o status para cancelado e retira da lista de espera do Almoxarifado.
