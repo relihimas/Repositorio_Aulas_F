@@ -9,6 +9,28 @@
 --3.	Cancelamento de Pedido de Compra:
 --a.	Caso o setor de Suprimentos decida cancelar algum Pedido de Compra, ativa uma trigger onde altera o status para cancelado e retira da lista de espera do Almoxarifado.
 
+SET SERVEROUTPUT ON
+CREATE OR REPLACE TRIGGER trg_cancelacompra
+BEFORE UPDATE OF status ON t_pedidos_compra
+REFERENCING NEW AS novo_status
+            OLD AS antigo_status
+FOR EACH ROW
+DECLARE
+    v_status    t_pedidos_compra.status%TYPE;
+BEGIN
+    v_status := :novo_status.status;
+    DBMS_OUTPUT.PUT_LINE('Status atualizado de '|| :antigo_status.status ||' para ' || :novo_status.status);
+END trg_cancelacompra;
+
+
+UPDATE t_pedidos_compra
+   SET status = 'Cancelado'
+ WHERE idpedido = XXXX;
+ 
+ 
+ ALTER TABLE t_pedidos_compra
+ ADD status VARCHAR2(10) NOT NULL;
+
 --4.	Cadastro de Cliente (Pessoa Jurídica, Pessoa Física):
 --a.	Montar uma procedure que facilmente entenda os dados imputados pelo usuário para que internamente ele destrinche entre Pessoa Jurídica e Física.
 
