@@ -6,6 +6,34 @@
 --2.	Automação de aviso de novo pedido de compra ao Almoxarifado:  
 --a.	Após um novo pedido de compra ser feito pelo setor de Suprimentos, o ERP ativa uma procedure que retorna todos os pedidos de compra que foram realizados e que ainda não foram recebidos para monitoramento de Suprimentos e verificação de recebimento pelo Almoxarifado. Podemos acrescentar um para aviso de pedido de compra recebido. 
 
+--Realizei as seguintes alterações para melhor ajuste do que eu queria com as premissas de negócio para continuar a questão:
+--1. criei uma procedure que faz o input do novo pedido
+--2. criei uma trigger que abrirá uma view com todas as ordens em aberto
+
+
+SET SERVEROUTPUT ON
+
+CREATE OR REPLACE PROCEDURE prcd_novopedido
+(   p_idpedido                  IN  t_pedidos_compra.status%TYPE,
+    p_idproduto                 IN  t_pedidos_compra.status%TYPE,
+    p_idfornecedor              IN  t_pedidos_compra.status%TYPE,
+    p_idfuncionario             IN  t_pedidos_compra.status%TYPE,
+    p_status			        IN  t_pedidos_compra.status%TYPE)
+IS
+BEGIN 
+    INSERT INTO t_pedidos_compra (idpedido, idproduto, idfornecedor, idfuncionario, status)
+    VALUES (p_idpedido, p_idproduto, p_idfornecedor, p_idfuncionario, p_status);
+    COMMIT;
+EXCEPTION
+    WHEN OTHERS THEN ROLLBACK;
+END prcd_novopedido;
+
+
+
+AFTER INSERT 
+
+
+
 --3.	Cancelamento de Pedido de Compra:
 --a.	Caso o setor de Suprimentos decida cancelar algum Pedido de Compra, ativa uma trigger onde altera o status para cancelado e retira da lista de espera do Almoxarifado.
 
