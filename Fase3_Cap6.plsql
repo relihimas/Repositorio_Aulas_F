@@ -2,6 +2,150 @@
 
 --1.	Automação de aviso para estoque em “quantidade crítica”:
 --a.	Montar uma procedure, com uma função interna que calcula o giro de estoque de cada produto, caso a quantidade em estoque seja classificada pela condição interna em “quantidade crítica” deve ser mostrada quando a procedure for retornada pelo usuário no front ou envio para e-mail pelo ERP.
+--Criei uma tabela para o recebimento e outra para a saídas requisitadas
+
+
+CREATE TABLE t_recebimento(
+    idRecebimento           INTEGER NOT NULL,
+    t_produto_idproduto     INTEGER NOT NULL,
+    t_idnotafiscal          INTEGER NOT NULL,   
+    dtEntrada               DATE,
+    qte                     FLOAT NOT NULL,
+    custoUnitario           FLOAT NOT NULL,
+    valorEstoque            FLOAT NOT NULL);
+
+ALTER TABLE t_recebimento
+ADD CONSTRAINT "t_recebi_pk" PRIMARY KEY (idRecebimento );
+
+ALTER TABLE t_recebimento
+ADD CONSTRAINT t_produto_fk FOREIGN KEY (t_idproduto)
+REFERENCES t_produto (idproduto);
+
+ALTER TABLE t_recebimento
+ADD CONSTRAINT t_idnotafiscal_fk FOREIGN KEY (t_idnotafiscal)
+REFERENCES t_nota_fiscal (idnotafiscal);
+
+################################################################################
+
+CREATE TABLE t_requisitado(
+    idRequisicao            INTEGER NOT NULL,
+    t_id_recebimento        INTEGER NOT NULL,
+    t_produto_idproduto     INTEGER NOT NULL, 
+    dtSaida                 DATE,
+    qte                     FLOAT NOT NULL,
+    custoUnitario           FLOAT NOT NULL,
+    valorRequisitado        FLOAT NOT NULL);
+    
+ALTER TABLE t_requisitado
+ADD CONSTRAINT t_requisicao PRIMARY KEY (idRequisicao);
+
+ALTER TABLE t_requisitado
+ADD CONSTRAINT t_idnf_requi_fk FOREIGN KEY (t_idnotafiscal)
+REFERENCES t_nota_fiscal (idnotafiscal);
+
+ALTER TABLE t_requisitado
+ADD CONSTRAINT t_produto_fk FOREIGN KEY (t_idproduto)
+REFERENCES t_produto (idproduto);
+
+################################################################################
+
+CREATE TABLE t_vendas(
+    idVenda                 INTEGER NOT NULL,
+    t_produto_idproduto     INTEGER NOT NULL,
+    t_idnotafiscal          INTEGER NOT NULL,   
+    t_idcliente             INTEGER NOT NULL,
+    dtVenda                 DATE,
+    qte                     FLOAT NOT NULL,
+    valorUnitario           FLOAT NOT NULL);
+
+ALTER TABLE t_vendas
+ADD CONSTRAINT t_vendas PRIMARY KEY (idVenda);
+
+ALTER TABLE t_vendas
+ADD CONSTRAINT t_idnf_requi_fk FOREIGN KEY (t_idnotafiscal)
+REFERENCES t_nota_fiscal (idnotafiscal);
+
+ALTER TABLE t_vendas
+ADD CONSTRAINT t_produto_fk FOREIGN KEY (t_idproduto)
+REFERENCES t_produto (idproduto);
+
+ALTER TABLE t_vendas
+ADD CONSTRAINT t_produto_fk FOREIGN KEY (t_idcliente)
+REFERENCES t_cliente (idcliente);
+
+################################################################################
+
+CREATE TABLE t_estoque(
+        idEstoque                   INTEGER NOT NULL,
+        UltimaDiaEstoque            DATE,
+        t_produto_idproduto         INTEGER NOT NULL,
+        qte                         FLOAT NOT NULL,
+        custoUnitario               FLOAT NOT NULL);
+        
+ALTER TABLE t_estoque
+ADD CONSTRAINT t_estoque PRIMARY KEY (idEstoque );
+
+ALTER TABLE t_estoque
+ADD CONSTRAINT t_prod_esto_fk FOREIGN KEY (t_idproduto)
+REFERENCES t_produto (idproduto);
+
+################################################################################
+CREATE OR REPLACE PACKAGE giroestoque AS
+    FUNCTION fc_vendaanual(p_idproduto IN t_produto.idproduto%TYPE) RETURN NUMBER;
+    FUNCTION fc_estoquemedio(p_idproduto IN t_produto.idproduto%TYPE) RETURN NUMBER;
+    FUNCTION fc_giroestoque(p_idproduto IN  t_produto.idproduto%TYPE);
+END giroestoque;
+
+CREATE OR REPLACE PACKAGE BODY giroestoque AS
+    FUNCTION fc_vendaanual
+    (   p_idproduto                  IN  t_produto.idproduto%TYPE)
+    RETURN NUMBER IS
+        v_vendaanual := FLOAT DEFAULT 0;
+    BEGIN
+        SELECT  SUM (qte * valorUnitario)
+        INTO    v_vendanaual
+        FROM    t_vendas
+        WHERE   dtVenda BETWEEN SYSDATE AND ADD_MONTHS(TRUNC(SYSDATE), -12)
+                AND t_produto_idproduto = p_idproduto;
+        
+        RETURN v_vendaanual
+    END fc_vendaanual;
+
+    FUNCTION fc_estoquemedio
+    (   p_idproduto                  IN  t_produto.idproduto%TYPE)
+    RETURN NUMBER IS
+        v_estoquemedio := FLOAT DEFAULT 0;
+    BEGIN
+        SELECT  AVG(qte)
+        INTO    v_estoquemedio
+        FROM    t_estoque
+        WHERE   dtVenda BETWEEN SYSDATE AND ADD_MONTHS(TRUNC(SYSDATE), -12)
+                AND t_produto_idproduto = p_idproduto;
+        
+        RETURN v_estoquemedio
+    END fc_estoquemedio;
+
+    FUNCTION fc_giroestoque
+    (p_idproduto IN  t_produto.idproduto%TYPE) IS
+        giro := FLOAT DEFAULT 0; 
+    BEGIN
+        SELECT  p_idproduto, ( fc_vendaanual(p_idproduto) / fc_estoquemedio(p_idproduto) )
+        INTO    p_idproduto, giro
+        FROM    dual
+        WHERE   idproduto = p_idproduto
+        IF (giro > 3) THEN
+            DBMS_OUTPUT.PUT_LINE('Giro ok');
+        ELSE 
+            DBMS_OUTPUT.PUT_LINE('Giro em estado crítico - solicite compra imediatamente!!');
+        RETURN giro   
+    END fc_giroestoque
+    
+END giroestoque;
+
+
+    
+
+
 
 --2.	Automação de aviso de novo pedido de compra ao Almoxarifado:  
 --a.	Após um novo pedido de compra ser feito pelo setor de Suprimentos, o ERP ativa uma procedure que retorna todos os pedidos de compra que foram realizados e que ainda não foram recebidos para monitoramento de Suprimentos e verificação de recebimento pelo Almoxarifado. Podemos acrescentar um para aviso de pedido de compra recebido. 
