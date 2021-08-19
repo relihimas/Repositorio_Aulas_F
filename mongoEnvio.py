@@ -26,6 +26,10 @@ print("Documento inserido!")
 retorno = album.find_one({"title": ""})
 print(retorno)
 
+"""BUSCANDO TODOS OS DOCUMENTOS"""
+for doc in album.find({}):
+    print(doc)
+
 """ATULIZANDO UM DOCUMENTO"""
 album.update_one({'title': ''}, {'$set': {'title': ''}})
 print('Documento atualizado!')
